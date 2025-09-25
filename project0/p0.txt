@@ -1,0 +1,120 @@
+.\" vim:ft=nroff
+.ad l
+.TH P0 7 "09/12/2025" "COP4600"
+.SH "NAME"
+P0 \- My First Kernel Mod
+.SH "SYNOPSIS"
+.EX
+\fBssh -p 4600 reptilian@localhost\fR
+\fBcd /usr/rep/src/reptilian-kernel\fR
+.EE
+.SH "DESCRIPTION"
+In this project, we added a boot message to the kernel
+and modified the boot menu entry label.
+.SS "Adding the boot message"
+To figure out which file to modify,
+the author took the hint and searched for the string
+\fB"rcu_end_inkernel_boot"\fR
+in directories that had promising names.
+.PP
+.in +4
+.EX
+\fB$ grep \-Frn rcu_end_inkernel_boot kernel\fR
+kernel/rcu/update.c:188:void rcu_end_inkernel_boot(void)
+.EE
+.PP
+Looks like a function definition, but we need the function call.
+Let's try another directory:
+.PP
+.in +4
+.EX
+\fB$ grep \-Frn rcu_end_inkernel_boot init\fR
+init/main.c:1112:        rcu_end_inkernel_boot();
+.EE
+.PP
+Much better!
+We use Reptilian's \fBvi\fR (which is a symlink to \fBvim.tiny\fR) to edit the file:
+.PP
+.in +4
+.EX
+\fB$ vi init/main.c\fR
+.EE
+.PP
+The \fBprintk()\fR function within the kernel is used to log messages to the console.
+Let's see if this file has an example we can copy:
+.PP
+.in +4
+.EX
+\fB/printk<Return>\fR
+.EE
+.PP
+The first result gives:
+.PP
+.in +4
+.EX
+printk(KERN_DEBUG "calling  %pF @ %i\\n", fn, task_pid_nr(current));
+.EE
+.PP
+The format of the function resembles \fBprintf\fR(3).
+Now we go to the line containing the \fBrcu_end_inkernel_boot()\fR call:
+.PP
+.in +4
+.EX
+\fB1112G\fR
+.EE
+.PP
+Following the instructions,
+we insert our \fBprintk()\fR call above this line,
+insert newlines at the beginning and end of the string,
+and adjust the log level to \fBKERN_ERR\fR so we can actually get the message:
+.PP
+.in +4
+.EX
+printk(KERN_ERR "\\n##### Daniel Li (UFID: 9915-7575) Zero to Infinity #####\\n\\n");
+.EE
+.PP
+Recompile and install:
+.PP
+.in +4
+.EX
+\fB$ make\fR
+\fB$ sudo make install\fR
+.EE
+.SS "Modifying the GRUB boot menu"
+This system uses GRUB Legacy,
+which uses a configuration file named \fBmenu.lst\fR in a directory named \fBgrub\fR.
+The author eventually found the file in \fB/mnt/sysroot/grub\fR.
+(\fB/mnt/sysroot\fR points to the Android system root.)
+Changing the menu entry label was simply a matter of changing this line:
+.PP
+.in +4
+.EX
+title Reptilian 20.08-A9.0-r2
+.EE
+.PP
+To this:
+.PP
+.in +4
+.EX
+title Reptilian 20.08-A9.0-r2 (Daniel Li)
+.EE
+.SS "Testing"
+Testing was performed by executing a \fBsync\fR(1)
+to flush changes to the virtual filesystem
+then killing an restarting the VM.
+On QEMU, this was done by closing the window
+and restarting the script that invoked \fBqemu-system-x86_64\fR.
+.PP
+The patch was generated with:
+.PP
+.in +4
+.EX
+\fB$ ssh -p 4600 reptilian@localhost git diff > p0.diff\fR
+.EE
+.SH "BUGS"
+To be decided by the grader.
+.SH "AUTHOR"
+Written by Daniel Li.
+.SH "SEE ALSO"
+This video proves that the author actually did the things in this report:
+\fIhttps://youtu.be/_gBqsjJV-s4\fR

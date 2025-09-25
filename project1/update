@@ -1,0 +1,3 @@
+#!/bin/sh
+cmd='git -C /usr/rep/src/reptilian-kernel diff > p1.diff && tar -c p1.diff process_log/Makefile process_log/process_log.h'
+ssh -p 4600 reptilian@localhost "$cmd" | tar -xv

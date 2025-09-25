@@ -1,0 +1,11 @@
+*.ova
+*.vmdk
+*.qcow2
+*.a
+*.o
+*.tar.gz
+*.mp4
+screencast.txt
+
+!README.pdf
+!syllabus.pdf

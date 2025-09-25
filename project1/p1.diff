@@ -1,0 +1,86 @@
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index bbfc6d440..ba18aa9f6 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -345,6 +345,9 @@
+ 334	common	rseq			__x64_sys_rseq
+ 424	common	pidfd_send_signal	__x64_sys_pidfd_send_signal
+ 434	common	pidfd_open		__x64_sys_pidfd_open
++500	common	get_proc_log_level	__x64_sys_get_proc_log_level
++501	common	set_proc_log_level	__x64_sys_set_proc_log_level
++502	common	proc_log_message	__x64_sys_proc_log_message
+ 
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 278153bc4..4f554dad0 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -10,7 +10,8 @@ obj-y     = fork.o exec_domain.o panic.o \
+ 	    extable.o params.o \
+ 	    kthread.o sys_ni.o nsproxy.o \
+ 	    notifier.o ksysfs.o cred.o reboot.o \
+-	    async.o range.o smpboot.o ucount.o
++	    async.o range.o smpboot.o ucount.o \
++	    proc_log.o
+ 
+ obj-$(CONFIG_MODULES) += kmod.o
+ obj-$(CONFIG_MULTIUSER) += groups.o
+diff --git a/kernel/proc_log.c b/kernel/proc_log.c
+new file mode 100644
+index 000000000..df4b72e81
+--- /dev/null
++++ b/kernel/proc_log.c
+@@ -0,0 +1,52 @@
++#include <linux/cred.h>
++#include <linux/sched.h>
++#include <linux/syscalls.h>
++#include <linux/uaccess.h>
++
++static int proc_log_level = 0;
++
++static const char *level_prefixes[] = {
++	KERN_EMERG	"PROC_OVERRIDE",
++	KERN_ALERT	"PROC_ALERT",
++	KERN_CRIT    	"PROC_CRITICAL",
++	KERN_ERR  	"PROC_ERROR",
++	KERN_WARNING	"PROC_WARNING",
++	KERN_NOTICE	"PROC_NOTICE",
++	KERN_INFO	"PROC_INFO",
++	KERN_DEBUG	"PROC_DEBUG"
++};
++
++SYSCALL_DEFINE0(get_proc_log_level)
++{
++	return proc_log_level;
++}
++
++SYSCALL_DEFINE1(set_proc_log_level, int, new_level)
++{
++	if (new_level < 0 || new_level > 7 || !uid_eq(current_cred()->euid, KUIDT_INIT(0))) {
++		return -1;
++	}
++	proc_log_level = new_level;
++	return new_level;
++}
++
++SYSCALL_DEFINE2(proc_log_message, char __user *, message, int, level)
++{
++	char buf[128];
++	char comm[TASK_COMM_LEN];
++	unsigned long res;
++	if (level < 0 || level > 7) {
++		return -1;
++	}
++	if (level > proc_log_level) {
++		return level;
++	}
++	res = __copy_from_user(buf, message, sizeof(buf));
++	if (res) {
++		buf[sizeof(buf) - res] = 0;
++	}
++	get_task_comm(comm, current);
++	// $log_level_name [$executable, $pid]: $message
++	printk("%s [%s, %lld]: %.128s\n", level_prefixes[level], comm, (long long)current->pid, buf);
++	return level;
++}

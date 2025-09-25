@@ -1,0 +1,2 @@
+#!/bin/sh
+exec ssh -p 4600 reptilian@localhost "$@"

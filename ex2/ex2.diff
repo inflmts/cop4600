@@ -1,0 +1,13 @@
+diff --git a/init/main.c b/init/main.c
+index 02f6b6bd6..5f2d04500 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -1109,7 +1109,7 @@ static int __ref kernel_init(void *unused)
+ 	system_state = SYSTEM_RUNNING;
+ 	numa_default_policy();
+ 
+-	printk(KERN_ERR "\n##### Daniel Li (UFID: 9915-7575) Zero to Infinity #####\n\n");
++	printk(KERN_ERR "\n### Daniel Li (Exercise 2) ###\n\n");
+ 	rcu_end_inkernel_boot();
+ 
+ 	if (ramdisk_execute_command) {

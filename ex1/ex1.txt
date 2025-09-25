@@ -1,0 +1,81 @@
+.\" vim:ft=nroff
+.\" This file was written manually.
+.TH EX1 7 "09/10/2025" "COP4600"
+.SH NAME
+Ex1 \- The Command Line
+.SH SYNOPSIS
+.B ssh \-p 4600 reptilian@localhost
+.SH DESCRIPTION
+We're going to do Linux commands and tar files.
+.P
+1. Create a directory with the name format
+.I last_first
+(e.g., \fB"sanchez_richard"\fR) in \fB/home/reptilian\fR.
+.P
+.in +4n
+.EX
+mkdir li_daniel
+.EE
+.in
+.P
+2. Issue a command to find files that contain the phrase \fB"android_dev"\fR
+from the kernel source directory.
+.P
+.in +4n
+.EX
+grep \-F \-r android_dev /usr/rep/src/reptilian_kernel
+.EE
+.in
+.P
+3. Reissue the command from (2); this time,
+pipe the output of the command to a file named \fB"output.txt"\fR.
+.P
+.in +4n
+.EX
+grep \-F \-r android_dev /usr/rep/src/reptilian_kernel > output.txt
+.EE
+.in
+.P
+4. Take a screenshot after running \fB'ls'\fR on the parent directory
+of the file you found from (2).
+.P
+.in +4n
+.EX
+grim shot2.png
+.EE
+.in
+.P
+5. Take a screenshot of the command and its result from (3).
+.P
+.in +4n
+.EX
+grim shot3.png
+.EE
+.in
+.P
+6. Move or copy \fB"output.txt"\fR into the directory created in (1).
+.P
+.in +4n
+.EX
+mv output.txt li_daniel
+.EE
+.in
+.P
+7. From \fB/home/reptilian\fR, create a tar file named \fBex1.tar\fR
+of the directory from (1) (including contents).
+.P
+.in +4n
+.EX
+tar \-cvf ex1.tar
+.EE
+.in
+.P
+8. Use gzip to compress \fBex1.tar\fR (yielding \fBex1.tar.gz\fR).
+.P
+.in +4n
+.EX
+gzip ex1.tar
+.EE
+.in
+.SH AUTHOR
+Written by Daniel Li.

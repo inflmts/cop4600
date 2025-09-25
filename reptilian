@@ -1,0 +1,57 @@
+#!/bin/sh
+# Reptilian launcher
+# Access the system using: ssh -p 4600 reptilian@localhost
+
+set -ue
+
+name=Reptilian-20.08-A9.0-x64
+ova_url="https://cise.ufl.edu/research/reptilian/downloads/$name.ova"
+ova_file="$name.ova"
+vmdk_file="$name-disk1.vmdk"
+image="$name.qcow2"
+
+init=false
+reset=false
+load=
+
+for opt; do
+  case $opt in
+    --init) init=true ;;
+    --reset) reset=true ;;
+    --load=*) load=${opt#*=} ;;
+    *) echo >&2 "usage: $0 [--init] [--reset] [--load=NAME]"; exit 2 ;;
+  esac
+done
+
+init_image() {
+  if ! command -v qemu-img > /dev/null 2>&1; then
+    echo >&2 "$0: could not find qemu-img"
+    exit 1
+  fi
+  rm -f "$image"
+  echo "Downloading $ova_file..."
+  curl -Lf -o "$ova_file" "$ova_url"
+  echo "Extracting $vmdk_file..."
+  tar -xf "$ova_file" "$vmdk_file"
+  rm -f "$ova_file"
+  echo "Converting to $image..."
+  qemu-img convert -p -f vmdk -O qcow2 "$vmdk_file" "$image"
+  rm -f "$vmdk_file"
+}
+
+cd "$(dirname "$(realpath "$0")")"
+
+if $reset || [ ! -e "$image" ]; then
+  init_image
+fi
+
+if $init; then
+  exit
+fi
+
+exec qemu-system-x86_64 \
+  -smp 2 -m 1G -cpu host -M q35 -enable-kvm \
+  -drive file="$image",format=qcow2,cache=unsafe \
+  -device e1000,netdev=net \
+  -netdev user,id=net,hostfwd=tcp:127.0.0.1:4600-:22 \
+  ${load:+-loadvm "$load"}
