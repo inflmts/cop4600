@@ -3,6 +3,7 @@
 *.qcow2
 *.a
 *.o
+*.out
 *.tar.gz
 *.mp4
 screencast.txt
