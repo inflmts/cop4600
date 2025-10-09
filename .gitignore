@@ -5,7 +5,9 @@
 *.o
 *.out
 *.tar.gz
+*.tgz
 *.mp4
+*.img
 screencast.txt
 
 !README.pdf
