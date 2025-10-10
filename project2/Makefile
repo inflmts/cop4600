@@ -19,3 +19,6 @@ MemoryManager.tgz: \
 	MemoryManager/MemoryManager.cpp \
 	MemoryManager/Makefile
 	tar -czvf $@ $^
+
+MemoryManager/Makefile: Makefile
+	sed '2,8s|MemoryManager/||g; 2,8!s|^|#|' $< > $@
