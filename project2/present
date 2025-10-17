@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -ue
+record=false
+
+for opt; do
+  case $opt in
+    --record) record=true ;;
+    *) echo >&2 "usage: $0 [--record]"; exit 2 ;;
+  esac
+done
+
+prompt() {
+  echo -n ">>> $* "
+  read -r res
+  "$@" && echo
+}
+
+if $record; then
+  wf-recorder -a -f screencast.mp4 -o eDP-1 -y & pid=$!
+  trap 'kill -INT $pid 2> /dev/null && wait' EXIT INT
+  sleep 1
+fi
+
+clear
+neovide --no-tabs -- -M MemoryManager/MemoryManager.h MemoryManager/MemoryManager.cpp
+prompt make -B test.out
+prompt valgrind ./test.out
+echo -n ">>> Recording finished. "
+read -r res
