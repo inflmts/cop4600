@@ -11,12 +11,11 @@ class MemoryManager
 {
   unsigned int word_size;
   MemoryAllocator allocator;
-  unsigned int pool_size_words;
+  unsigned int num_words;
+  unsigned int pool_size;
   unsigned int total_size;
-  unsigned int num_holes;
   unsigned char *pool;
   unsigned char *map;
-  unsigned char *map_end;
 
 public:
   MemoryManager(unsigned int wordSize, MemoryAllocator allocator);
