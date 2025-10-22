@@ -8,6 +8,7 @@
 *.tgz
 *.mp4
 *.img
+*.fifo
 screencast.txt
 
 !README.pdf
