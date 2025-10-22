@@ -57,14 +57,31 @@ int main(int argc, char **argv)
   }
 
   if (fork()) {
+    close(fds.w01);
+    close(fds.r10);
+    close(fds.r12);
+    close(fds.r20);
+    close(fds.w20);
     sorter(&fds);
     _exit(0);
   }
 
   if (fork()) {
+    close(fds.r01);
+    close(fds.w01);
+    close(fds.r10);
+    close(fds.w10);
+    close(fds.w12);
+    close(fds.r20);
     finder(&fds);
     _exit(0);
   }
+
+  close(fds.r01);
+  close(fds.w10);
+  close(fds.r12);
+  close(fds.w12);
+  close(fds.w20);
 
   write(fds.w01, nums, sizeof(nums));
   read(fds.r10, nums, sizeof(nums));
