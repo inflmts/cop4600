@@ -16,15 +16,19 @@ prompt() {
   "$@" && echo
 }
 
+clear
 if $record; then
-  wf-recorder -a -f screencast.mp4 -o eDP-1 -y & pid=$!
+  echo "Starting recording."
+  pamixer --source @DEFAULT_SOURCE@ --set-volume 100
+  wf-recorder -a -f screencast.mp4 -o eDP-1 -y > /tmp/screencast.log 2>&1 & pid=$!
   trap 'kill -INT $pid 2> /dev/null && wait' EXIT INT
-  sleep 1
+else
+  echo "Not recording. Pass --record to start screencast."
 fi
 
-clear
+sleep 1
 neovide --no-tabs -- -M MemoryManager/MemoryManager.h MemoryManager/MemoryManager.cpp
 prompt make -B test.out
 prompt valgrind ./test.out
-echo -n ">>> Recording finished. "
+echo -n "Press Enter to end recording. "
 read -r res
