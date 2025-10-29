@@ -1,0 +1,54 @@
+#!/bin/sh
+
+delay=${1:-0.1}
+
+prompt() {
+  printf '\033[1;32mreptilian@localhost\033[0m:\033[1;34m~/ex8\033[0m$ '
+  if [ -n "$1" ]; then
+    echo "$1"
+    eval "$1"
+  fi
+}
+
+send() {
+  sleep $delay
+  echo "$*"
+  echo "$*" >&3
+}
+
+make || exit
+clear
+prompt './wallserver 2 &'
+pid=$!
+trap 'kill $pid' HUP INT TERM
+
+sleep $delay
+exec 3>&1
+
+{
+  send post
+  send Daniel
+  send Let it be known
+  send post
+  send Daniel
+  send that one day
+  send post
+  send Daniel
+  send I will no longer
+  grim func1.png
+  send clear
+  send post
+  send Daniel
+  send have the will to push through the boundaries that have over time made me
+  send post
+  send Daniel
+  send question the purpose and meaning of everything I have and will have done.
+  send quit
+} | prompt 'nc -N localhost 5514'
+
+send kill | prompt 'nc -N localhost 5514'
+prompt 'nc -Nv localhost 5514'
+prompt
+sleep $delay
+grim func2.png
+echo
