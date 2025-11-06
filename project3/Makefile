@@ -30,7 +30,7 @@ wad.tar.gz: \
 #	https://github.com/google/googletest/issues/4355
 #
 test: libtest.out
-	cd test-workspace && TERM=xterm ../libtest.out
+	TERM=xterm ./libtest.out
 
 libtest.out: libtest.cpp libWad/libWad.a
 	g++ -g -o $@ $< -lgtest -lgtest_main -IlibWad/ -LlibWad/ -lWad

@@ -2,7 +2,4 @@
 /wadfs/Makefile
 /wadfs/wadfs
 /mnt
-/test-workspace
-*.WAD
-*.wad
-*.txt
+/mnt.wad

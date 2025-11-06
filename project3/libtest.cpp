@@ -1,27 +1,35 @@
 #include <string>
 #include <vector>
 #include <fcntl.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <sys/mman.h>
 #include <unistd.h>
 #include <gtest/gtest.h>
 
 #include "Wad.h"
 
-const std::string setupWorkspace(){
+std::string setupWorkspace()
+{
+  static void *wad_data = MAP_FAILED;
+  static int test_wad_fd = -1;
 
-  const std::string wad_path = "./testfiles/sample1.wad";
-  const std::string test_wad_path = "./testfiles/sample1_copy.wad";
-
-  std::string command = "cp " + wad_path + " " + test_wad_path;
-  int returnCode = system(command.c_str());
-
-  if(returnCode == EXIT_FAILURE){
-    throw("Copy failure");
+  if (wad_data == MAP_FAILED) {
+    int wad_fd = open("sample1.wad", O_RDONLY);
+    wad_data = mmap(nullptr, 30721, PROT_READ, MAP_PRIVATE, wad_fd, 0);
+    close(wad_fd);
   }
 
-  return test_wad_path;
-}
+  if (test_wad_fd != -1) {
+    close(test_wad_fd);
+  }
 
+  test_wad_fd = memfd_create("test_wad", 0);
+  pwrite(test_wad_fd, wad_data, 30721, 0);
+
+  char buf[32];
+  int len = sprintf(buf, "/proc/self/fd/%d", test_wad_fd);
+  return std::string(buf, len);
+}
 
 TEST(LibReadTests, getMagic){
   std::string wad_path = setupWorkspace();
@@ -260,8 +268,9 @@ TEST(LibReadTests, getContentsTest8){
   char* expectedContents = new char[30000];
   char* buffer = new char[30000];
 
-  int file_fd = open("./testfiles/cake.jpg", O_RDONLY, 0777);
+  int file_fd = open("cake.jpg", O_RDONLY);
   read(file_fd, expectedContents, size);
+  close(file_fd);
 
   int ret = testWad->getContents(testPath, buffer, 29869);
   ASSERT_EQ(ret, 29869);
