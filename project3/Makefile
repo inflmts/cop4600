@@ -1,7 +1,4 @@
-.PHONY: dist test mount
-
-%/Makefile: Makefile
-	sed '/^$*/,/^$$/!s|^|#|; s|$*/||g; s|libWad/|../&|g; s|-Werror||g' $< > $@
+.PHONY: dist test mount record
 
 wadfs/wadfs: wadfs/wadfs.cpp libWad/libWad.a
 	g++ -Wall -Werror -std=c++17 -o $@ $< \
@@ -23,6 +20,9 @@ wad.tar.gz: \
 	wadfs/Makefile \
 	wadfs/wadfs.cpp
 	tar -czf $@ $^
+
+%/Makefile: Makefile
+	sed '/^$*/,/^$$/!s|^|#|; t; s|$*/||g; s|libWad/|../&|g; s|-Werror||g' $< > $@
 
 # Only specific values of $TERM will activate colors automatically.
 # See:
@@ -46,3 +46,6 @@ mnt:
 
 mnt.wad:
 	cp sample1.wad $@
+
+record:
+	wf-recorder -a -f screencast.mp4

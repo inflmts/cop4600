@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 struct WadHeader
 {
